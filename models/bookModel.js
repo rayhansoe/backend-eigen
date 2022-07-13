@@ -35,6 +35,11 @@ const bookSchema = mongoose.Schema(
 			ref: 'User',
 		},
 
+		loanId: {
+			type: Schema.Types.ObjectId,
+			ref: 'Loan',
+		},
+
 		stock: {
 			type: Number,
 			required: [true, 'Please add a stock'],
