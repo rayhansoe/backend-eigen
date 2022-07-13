@@ -19,6 +19,11 @@ const bookSchema = mongoose.Schema(
 			required: [true, 'Please add a author'],
 		},
 
+		synopsis: {
+			type: String,
+			required: [true, 'Please add a author'],
+		},
+
 		slug: {
 			type: String,
 			required: [true, 'Please add a slug'],
