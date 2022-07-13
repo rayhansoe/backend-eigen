@@ -216,32 +216,43 @@ const getUserProfile = asyncHandler(async (req, res) => {
 
 	const userDevice = await Device.findOne({ device: userAgent, user: req.user._id })
 
-	// if user exist
-	if (userExist) {
-		const { _id, username, name, email } = userExist
+	let user
 
-		if (
-			req.user &&
-			userExist.id === req.user.id &&
-			JSON.stringify(userDevice.user) === JSON.stringify(req.user._id)
-		) {
-			res.status(200).json({
-				id: _id,
-				username,
-				name,
-				email,
-			})
-		} else {
-			res.status(200).json({
-				id: _id,
-				username,
-				name,
-			})
-		}
-	} else {
+	// if user exist
+	if (!userExist) {
 		res.status(404)
 		throw new Error('the username is invalid.')
 	}
+
+	if (!(JSON.stringify(userExist._id) === JSON.stringify(userDevice.user))) {
+		user = await User.findById(userExist._id)
+			.populate('books', 'code')
+			.select({
+				_id: 1,
+				username: 1,
+				name: 1,
+			})
+			.lean()
+
+		return res.status(200).json({
+			...user,
+		})
+	}
+
+	user = await User.findById(userExist._id)
+		.populate({ path: 'books', select: ['code', 'title'] })
+		.select({
+			_id: 1,
+			username: 1,
+			name: 1,
+			email: 1,
+			books: 1,
+		})
+		.lean()
+
+	res.status(200).json({
+		user,
+	})
 })
 
 // @desc Get Users
