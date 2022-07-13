@@ -75,6 +75,8 @@ const getBooks = asyncHandler(async (req, res) => {
 		: // show borrowed books / unavailable books
 		  Book.find({ stock: 0 })
 	)
+		.populate('user', 'code')
+		.populate('loanId', 'endOfLoan')
 		.select({
 			_id: 1,
 			code: 1,
@@ -83,6 +85,7 @@ const getBooks = asyncHandler(async (req, res) => {
 			stock: 1,
 			user: 1,
 			slug: 1,
+			loanId: 1,
 		})
 		.lean()
 
@@ -106,6 +109,8 @@ const getBookByParams = asyncHandler(async (req, res) => {
 		: // then findOne or by slug
 		  Book.findOne({ slug: params })
 	)
+		.populate({ path: 'user', select: ['name', 'code'] })
+		.populate('loanId', 'endOfLoan')
 		.select({
 			_id: 1,
 			code: 1,
