@@ -51,6 +51,52 @@ const setLoan = asyncHandler(async (req, res) => {
 	}
 })
 
+// @desc Read Books
+// @route Get /api/books/
+// @access PUBLIC
+const getLoans = asyncHandler(async (req, res) => {
+	// get queries
+	let { isActive, isCompleted, isForced } = req.query
+
+	// convert string to boolean
+	isActive = isActive === 'true'
+	isCompleted = isCompleted === 'true'
+	isForced = isForced === 'true'
+
+	// GET LOANS
+	const loans = await ((isActive && isCompleted && isForced) || // is READ all loans ?
+	(!isActive && !isCompleted && !isForced) || // is READ all loans ?
+	(isActive && isCompleted) // is READ all loans ?
+		? // then show all loans
+		  Loan.find()
+		: // check completed loans
+		isCompleted
+		? // then show completed loans
+		  Loan.find({ isCompleted })
+		: // check active & forced loans
+		isActive && isForced
+		? // then show active & forced loans
+		  Loan.find({ $or: [{ isCompleted: !isActive }, { isForced }] })
+		: // check active loans
+		isActive
+		? // then show active loans
+		  Loan.find({ isCompleted: !isActive })
+		: // the show forced loans
+		  Loan.find({ isForced })
+	)
+		.populate('user', req.user ? 'name' : 'code') // for public just show the code
+		.populate('book', req.user ? 'title' : 'code') // for public just show the code
+		.select({ message: 0, createdAt: 0, updatedAt: 0 })
+		.lean()
+
+	// status & response
+	res.status(200).json({
+		loans,
+		total: loans.length,
+	})
+})
+
 module.exports = {
 	setLoan,
+	getLoans,
 }
