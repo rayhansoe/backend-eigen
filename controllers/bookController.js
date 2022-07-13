@@ -1,4 +1,5 @@
 const Book = require('../models/bookModel')
+const ObjectId = require('mongoose').Types.ObjectId
 const asyncHandler = require('express-async-handler')
 
 // @desc set Book
@@ -7,6 +8,7 @@ const asyncHandler = require('express-async-handler')
 const setBook = asyncHandler(async (req, res) => {
 	const { code, title, author } = req.body
 	const stock = 1
+	const synopsis = `${title} Lorem ipsum dolor sit amet consectetur adipisicing elit. Consequatur, minus. Laborum necessitatibus praesentium esse ratione ut quisquam, voluptatem atque neque ullam vel maiores sed unde?`
 
 	// check the fields
 	if (!code || !title || !author) {
@@ -41,6 +43,7 @@ const setBook = asyncHandler(async (req, res) => {
 		title,
 		stock,
 		slug,
+		synopsis,
 	})
 
 	// check if create user fail.
@@ -62,7 +65,16 @@ const getBooks = asyncHandler(async (req, res) => {
 	const { available, borrowed } = req.query
 
 	// get all books
-	let books = await Book.find()
+	const books = await ((borrowed && available) || (!borrowed && !available) // is READ all books ?
+		? // then show all books
+		  Book.find()
+		: // check available books
+		available
+		? // then show available books
+		  Book.find({ stock: 1 })
+		: // show borrowed books / unavailable books
+		  Book.find({ stock: 0 })
+	)
 		.select({
 			_id: 1,
 			code: 1,
@@ -74,51 +86,6 @@ const getBooks = asyncHandler(async (req, res) => {
 		})
 		.lean()
 
-	// check available book query is true
-	if (available) {
-		books = await Book.find({ stock: 1 })
-			.select({
-				_id: 1,
-				code: 1,
-				title: 1,
-				author: 1,
-				stock: 1,
-				user: 1,
-				slug: 1,
-			})
-			.lean()
-	}
-
-	// check unavailable / borrowed book query is true
-	if (borrowed) {
-		books = await Book.find({ stock: 0 })
-			.select({
-				_id: 1,
-				code: 1,
-				title: 1,
-				author: 1,
-				stock: 1,
-				user: 1,
-				slug: 1,
-			})
-			.lean()
-	}
-
-	// check apakah ada yang iseng klo available & borrowed is true
-	if (borrowed && available) {
-		books = await Book.find()
-			.select({
-				_id: 1,
-				code: 1,
-				title: 1,
-				author: 1,
-				stock: 1,
-				user: 1,
-				slug: 1,
-			})
-			.lean()
-	}
-
 	// status & response
 	res.status(200).json({
 		books,
@@ -126,7 +93,45 @@ const getBooks = asyncHandler(async (req, res) => {
 	})
 })
 
+// @desc Read Book by params
+// @route GET /api/books/:params
+// @access PUBLIC
+const getBookByParams = asyncHandler(async (req, res) => {
+	const { params } = req.params
+
+	// find book by params
+	const book = await (ObjectId.isValid(params) // params === id ?
+		? // then findById
+		  Book.findById({ _id: params })
+		: // then findOne or by slug
+		  Book.findOne({ slug: params })
+	)
+		.select({
+			_id: 1,
+			code: 1,
+			title: 1,
+			author: 1,
+			stock: 1,
+			user: 1,
+			synopsis: 1,
+			slug: 1,
+		})
+		.lean()
+
+	// check book
+	if (!book) {
+		res.status(404)
+		throw new Error('book not found')
+	}
+
+	// status & response
+	res.status(200).json({
+		book,
+	})
+})
+
 module.exports = {
 	setBook,
 	getBooks,
+	getBookByParams,
 }

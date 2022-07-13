@@ -1,7 +1,7 @@
 const express = require('express')
 const router = express.Router()
 
-const { setBook, getBooks } = require('../controllers/bookController')
+const { setBook, getBooks, getBookByParams } = require('../controllers/bookController')
 
 // Book Routes
 // Read All Books
@@ -16,9 +16,9 @@ const { setBook, getBooks } = require('../controllers/bookController')
 // balikinBook
 
 router.route('/').get(getBooks).post(setBook) // Set Book
-router.route('/').get() // Get Available Books
-router.route('/').get() // Get Unavailable Books
-router.route('/') // Pinjam Books | PUT or POST ?
-router.route('/') // Balikin Books | PUT or POST ?
+router.route('/:params').get(getBookByParams) // Get Available Books
+// router.route('/:id').get(getBookByID) // Get Unavailable Books
+// router.route('/') // Pinjam Books | PUT or POST ?
+// router.route('/') // Balikin Books | PUT or POST ?
 
 module.exports = router
