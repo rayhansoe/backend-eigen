@@ -30,6 +30,11 @@ const loanSchema = mongoose.Schema(
 			required: [true, 'Please add the end of the loan'],
 		},
 
+		completedAt: {
+			type: Date,
+			required: [true, 'Please add the loan completion date.'],
+		},
+
 		message: {
 			type: [String],
 			required: [true, 'Please add the end of the loan'],
