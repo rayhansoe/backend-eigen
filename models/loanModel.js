@@ -15,7 +15,12 @@ const loanSchema = mongoose.Schema(
 			required: [true, 'Please add a book'],
 		},
 
-		isDone: {
+		isCompleted: {
+			type: Boolean,
+			required: [true, 'Please add book status'],
+		},
+
+		isForced: {
 			type: Boolean,
 			required: [true, 'Please add book status'],
 		},
