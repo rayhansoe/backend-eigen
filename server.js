@@ -25,6 +25,7 @@ app.use(cookieParser())
 
 app.use('/api/users', require('./routes/userRoutes'))
 app.use('/api/books', require('./routes/bookRoutes'))
+app.use('/api/loans', require('./routes/loanRoutes'))
 
 if (process.env.NODE_ENV === 'production') {
 	app.get('/', (req, res) => res.redirect(301, 'http://goalsapp-one.vercel.app'))
