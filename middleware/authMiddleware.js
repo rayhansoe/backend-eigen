@@ -50,7 +50,7 @@ const protect = asyncHandler(async (req, res, next) => {
 	}
 })
 
-const protectGetUser = asyncHandler(async (req, res, next) => {
+const semiProtected = asyncHandler(async (req, res, next) => {
 	let token
 
 	if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
@@ -95,4 +95,4 @@ const protectGetUser = asyncHandler(async (req, res, next) => {
 	}
 })
 
-module.exports = { protect, protectGetUser }
+module.exports = { protect, semiProtected }

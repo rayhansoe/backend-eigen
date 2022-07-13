@@ -7,15 +7,15 @@ const {
 	getUserProfile,
 	logout,
 	handleRefreshToken,
-	getUsers
+	getUsers,
 } = require('../controllers/userController')
 
-const { protectGetUser, protect } = require('../middleware/authMiddleware')
+const { semiProtected, protect } = require('../middleware/authMiddleware')
 
 router.route('/').post(registerUser).get(getUsers)
 router.route('/login').post(loginUser)
 router.route('/logout').delete(protect, logout)
 router.route('/refreshToken').get(handleRefreshToken)
-router.route('/:username').get(protectGetUser, getUserProfile)
+router.route('/:username').get(semiProtected, getUserProfile)
 
 module.exports = router
