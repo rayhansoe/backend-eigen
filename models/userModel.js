@@ -36,6 +36,12 @@ const userSchema = new Schema(
 			unique: true,
 		},
 
+		books: {
+			type: [Schema.Types.ObjectId],
+			ref: 'Book',
+			unique: true,
+		},
+
 		refreshTokens: {
 			type: Array,
 			unique: true,

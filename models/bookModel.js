@@ -1,4 +1,5 @@
 const mongoose = require('mongoose')
+const { Schema, model } = mongoose
 
 const bookSchema = mongoose.Schema(
 	{
@@ -16,6 +17,11 @@ const bookSchema = mongoose.Schema(
 		author: {
 			type: String,
 			required: [true, 'Please add a author'],
+		},
+
+		user: {
+			type: Schema.Types.ObjectId,
+			ref: 'User',
 		},
 
 		stock: {
