@@ -1,3 +1,5 @@
+const moment = require('moment') // require
+const schedule = require('node-schedule');
 const asyncHandler = require('express-async-handler')
 
 const Loan = require('../models/loanModel')
@@ -12,8 +14,8 @@ const setLoan = asyncHandler(async (req, res) => {
 	const user = await User.findById(req?.user?._id)
 	const book = await Book.findById(req?.query?.bookId)
 
-	const date = new Date() // get date
-	const endOfLoan = date.setDate(date.getDate() + 7) // generate book return deadline
+	const endOfLoan = moment(new Date()).add(2, 'm').toDate() // generate book return deadline
+	const punishmentEnded = moment(new Date()).add(3, 'm').toDate() // generate punishment Ended
 	const message = [`${user.code} borrowed the ${book.code} book.`] // message for the first data creation action.
 
 	try {
@@ -25,6 +27,35 @@ const setLoan = asyncHandler(async (req, res) => {
 			isForced: false,
 			endOfLoan,
 			message,
+		})
+
+		const deadlineLoan = schedule.scheduleJob(`deadline-${loan._id}`, endOfLoan, async () => {
+
+			// update loan data
+			loan.isCompleted = true
+			loan.isForced = true
+			loan.completedAt = new Date()
+			loan.message.push(`${book.title} book has been returned by ${user.name} on ${new Date()} | FORCED ACTION`)
+			await loan.save()
+
+			// update user
+			const newBooks = user.books.filter((id) => JSON.stringify(id) !== JSON.stringify(book._id))
+			user.books = newBooks
+			user.penalty = true
+			await user.save()
+			
+			// update user
+			book.stock = 1
+			book.user = null
+			await book.save()
+
+			console.log(`${user.name} got punished!`)
+			
+			const punishment = schedule.scheduleJob(`punishment-${loan._id}`, punishmentEnded, async () => {
+				user.penalty = false
+				await user.save()
+				console.log(`${user.name} got forgiven!`)
+			})
 		})
 
 		// update user data
@@ -178,12 +209,16 @@ const completeTheLoan = asyncHandler(async (req, res) => {
 		let loan = await Loan.findById(req.params?.id)
 		let user = await User.findById(req?.user?._id)
 		let book = await Book.findById(loan?.book)
-
+		
+		const deadlineLoan = schedule.scheduledJobs[`deadline-${loan._id}`]
+		
 		if (!loan || !user || !book) {
 			res.status(424)
 			throw new Error('Failed to load this loan data.')
 		}
 
+		deadlineLoan && deadlineLoan.cancel() && console.log('deadline function is cancelled.')
+		
 		// update loan data
 		loan.isCompleted = true
 		loan.completedAt = new Date()
