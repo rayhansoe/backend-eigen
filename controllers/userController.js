@@ -214,19 +214,17 @@ const getUserProfile = asyncHandler(async (req, res) => {
 	const usernameParam = req.params.username
 	const userExist = await User.findOne({ username: usernameParam })
 
-	const userAgent = req.headers['user-agent'].toString()
-
-	const userDevice = await Device.findOne({ device: userAgent, user: req.user._id })
-
 	let user
-
+	
 	// if user exist
 	if (!userExist) {
 		res.status(404)
 		throw new Error('the username is invalid.')
+		
 	}
-
-	if (!(JSON.stringify(userExist._id) === JSON.stringify(userDevice.user))) {
+	
+	// Public Response
+	if (!(JSON.stringify(userExist._id) === JSON.stringify(req?.user?._id))) {
 		user = await User.findById(userExist._id)
 			.populate('books', 'code')
 			.select({
@@ -234,6 +232,7 @@ const getUserProfile = asyncHandler(async (req, res) => {
 				username: 1,
 				name: 1,
 				loans: 1,
+				penalty: 1,
 			})
 			.lean()
 
@@ -252,6 +251,7 @@ const getUserProfile = asyncHandler(async (req, res) => {
 			email: 1,
 			books: 1,
 			loans: 1,
+			penalty: 1,
 		})
 		.lean()
 
