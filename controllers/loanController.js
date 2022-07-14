@@ -100,18 +100,22 @@ const getLoans = asyncHandler(async (req, res) => {
 // @route GET /api/loans/:id
 // @access SEMI PUBLIC
 const getLoanById = asyncHandler(async (req, res) => {
+	// get Loan Id from parameter
 	const loanId = req.params?.id
 
 	try {
+		// find loan by id
 		const loan = await Loan.findById(loanId)
-			.populate('user', req.user ? 'name' : 'code')
-			.populate('book', req.user ? 'title' : 'code')
+			.populate('user', req.user ? 'name' : 'code') // for public just show the code
+			.populate('book', req.user ? 'title' : 'code') // for public just show the code
 			.lean()
 
+		// status code & response
 		res.status(200).json({
 			loan,
 		})
 	} catch (error) {
+		// if failed to find or load the loan data.
 		res.status(424)
 		throw new Error('Failed to load this loan data.')
 	}
