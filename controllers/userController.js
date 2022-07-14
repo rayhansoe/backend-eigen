@@ -1,8 +1,10 @@
-const User = require('../models/userModel')
-const Device = require('../models/deviceModel')
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 const asyncHandler = require('express-async-handler')
+
+const User = require('../models/userModel')
+const Book = require('../models/bookModel')
+const Device = require('../models/deviceModel')
 
 // @desc Register User
 // @route POST /api/users
@@ -263,23 +265,29 @@ const getUserProfile = asyncHandler(async (req, res) => {
 // @access PUBLIC
 const getUsers = asyncHandler(async (req, res) => {
 	const users = await User.find()
+		.populate('books', req.user ? 'code title' : 'code')
 		.select({
 			_id: 1,
 			code: 1,
 			username: 1,
 			name: 1,
 			penalty: 1,
+			books: 1,
 		})
 		.lean()
 
+	const borrowedBooks = await Book.find({ stock: 0 }).select('_id').lean()
+
 	if (!users) {
-		res.status(200).json({
-			message: 'tidak ada user!',
+		res.status(404).json({
+			message: 'users not found!',
 		})
 	}
 
 	res.status(200).json({
 		users,
+		totalUsers: users.length,
+		totalBorrowedBooks: borrowedBooks.length,
 	})
 })
 
