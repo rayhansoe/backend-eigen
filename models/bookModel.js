@@ -35,9 +35,10 @@ const bookSchema = mongoose.Schema(
 			ref: 'User',
 		},
 
-		loanId: {
-			type: Schema.Types.ObjectId,
+		loans: {
+			type: [Schema.Types.ObjectId],
 			ref: 'Loan',
+			unique: true,
 		},
 
 		stock: {
