@@ -4,10 +4,12 @@ const asyncHandler = require('express-async-handler')
 const Loan = require('../models/loanModel')
 
 const protectLoan = asyncHandler(async (req, res, next) => {
+	// collect data
 	const { loans } = req.user
 	const { id } = req.params
 	const loanId = mongoose.Types.ObjectId(id)
 
+	// find loan by id
 	const loan = await Loan.findById(id).select('isCompleted completedAt').lean()
 
 	// is My Loan ?
@@ -17,7 +19,7 @@ const protectLoan = asyncHandler(async (req, res, next) => {
 	}
 
 	// is My Active Loan ?
-	if (loan) {
+	if (loan?.isCompleted) {
 		res.status(403)
 		throw new Error('You have returned this book')
 	}

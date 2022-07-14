@@ -6,6 +6,7 @@ const asyncHandler = require('express-async-handler')
 // @route POST /api/books/
 // @access MUST BE PRIVATE
 const setBook = asyncHandler(async (req, res) => {
+	// define book fields
 	const { code, title, author } = req.body
 	const stock = 1
 	const synopsis = `${title} Lorem ipsum dolor sit amet consectetur adipisicing elit. Consequatur, minus. Laborum necessitatibus praesentium esse ratione ut quisquam, voluptatem atque neque ullam vel maiores sed unde?`
@@ -13,7 +14,6 @@ const setBook = asyncHandler(async (req, res) => {
 	// check the fields
 	if (!code || !title || !author) {
 		res.status(400)
-
 		throw new Error('Please add all fields.')
 	}
 
@@ -62,17 +62,17 @@ const setBook = asyncHandler(async (req, res) => {
 // @route GET /api/books/
 // @access PUBLIC
 const getBooks = asyncHandler(async (req, res) => {
-	const { available, borrowed } = req.query
+	const { isAvailable, isBorrowed } = req.query
 
 	// get all books
-	const books = await ((borrowed && available) || (!borrowed && !available) // is READ all books ?
+	const books = await ((isBorrowed && isAvailable) || (!isBorrowed && !isAvailable) // is READ all books ?
 		? // then show all books
 		  Book.find()
-		: // check available books
-		available
+		: // check isAvailable books
+		isAvailable
 		? // then show available books
 		  Book.find({ stock: 1 })
-		: // show borrowed books / unavailable books
+		: // show isBorrowed books / unavailable books
 		  Book.find({ stock: 0 })
 	)
 		.populate('user', req.user ? 'code name' : 'code')
@@ -106,7 +106,7 @@ const getBookByParams = asyncHandler(async (req, res) => {
 	const book = await (ObjectId.isValid(params) // params === id ?
 		? // then findById
 		  Book.findById({ _id: params })
-		: // then findOne or by slug
+		: // then findOne by slug
 		  Book.findOne({ slug: params })
 	)
 		.populate('user', req.user ? 'name code' : 'code')

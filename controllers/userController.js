@@ -10,25 +10,25 @@ const Device = require('../models/deviceModel')
 // @route POST /api/users
 // @access PUBLIC
 const registerUser = asyncHandler(async (req, res) => {
+	// get data from client
 	const { name, email, password, username } = req.body
 	const penalty = false
 	let { code } = req.body
 
 	// check the fields
 	if (!name || !email || !password || !username) {
-		res.status(400)
-
+		res.status(400)	
 		throw new Error('Please add all fields.')
 	}
 
-	// check if user exists
+	// check user exists
 	const userExistByEmail = await User.findOne({ email })
 	const userExistByUsername = await User.findOne({ username })
 
-	// user
+	// get user data
 	const users = await User.find()
 
-	// by email & username
+	// check by email & username
 	if (userExistByEmail && userExistByUsername) {
 		res.status(409)
 		throw new Error('Username & Email already taken.')
@@ -46,6 +46,7 @@ const registerUser = asyncHandler(async (req, res) => {
 		throw new Error('Email already taken.')
 	}
 
+	// check user code
 	if (!code) {
 		code = `M00${users.length + 1}`
 	}
@@ -130,6 +131,7 @@ const registerUser = asyncHandler(async (req, res) => {
 // @route POST /api/users/login
 // @access PUBLIC
 const loginUser = asyncHandler(async (req, res) => {
+	// get form login from client
 	const { text, password } = req.body
 
 	// check user
@@ -211,16 +213,19 @@ const loginUser = asyncHandler(async (req, res) => {
 // @route GET /api/users/:username
 // @access PUBLIC & PRIVATE
 const getUserProfile = asyncHandler(async (req, res) => {
+	// get username from parameter
 	const usernameParam = req.params.username
+
+	// get user from username
 	const userExist = await User.findOne({ username: usernameParam })
 
+	// declare user varable
 	let user
 	
-	// if user exist
+	// if usernam is invalid
 	if (!userExist) {
 		res.status(404)
 		throw new Error('the username is invalid.')
-		
 	}
 	
 	// Public Response
@@ -241,6 +246,7 @@ const getUserProfile = asyncHandler(async (req, res) => {
 		})
 	}
 
+	// get user profile are logged in
 	user = await User.findById(userExist._id)
 		.populate('books', 'code title')
 		.populate('loans', 'isComplete endOfLoan')
@@ -255,6 +261,7 @@ const getUserProfile = asyncHandler(async (req, res) => {
 		})
 		.lean()
 
+	// status code & json response
 	res.status(200).json({
 		user,
 	})
@@ -262,7 +269,7 @@ const getUserProfile = asyncHandler(async (req, res) => {
 
 // @desc Get Users
 // @route GET /api/users
-// @access PUBLIC
+// @access PUBLIC & PRIVATE
 const getUsers = asyncHandler(async (req, res) => {
 	const users = await User.find()
 		.populate('books', req.user ? 'code title' : 'code')
@@ -276,14 +283,17 @@ const getUsers = asyncHandler(async (req, res) => {
 		})
 		.lean()
 
-	const borrowedBooks = await Book.find({ stock: 0 }).select('_id').lean()
-
+	// if users is not exist
 	if (!users) {
 		res.status(404).json({
 			message: 'users not found!',
 		})
 	}
 
+	// count borrowed books
+	const borrowedBooks = await Book.find({ stock: 0 }).select('_id').lean()
+	
+	// status code and json response
 	res.status(200).json({
 		users,
 		totalUsers: users.length,
@@ -385,6 +395,8 @@ const logout = asyncHandler(async (req, res) => {
 	const filteredRefreshTokens = user.refreshTokens.filter(
 		(rt) => JSON.stringify(rt.device) !== JSON.stringify(device.id)
 	)
+
+	// update user refresh tokens
 	user.refreshTokens = filteredRefreshTokens
 	await user.save()
 

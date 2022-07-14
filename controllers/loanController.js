@@ -29,6 +29,7 @@ const setLoan = asyncHandler(async (req, res) => {
 			message,
 		})
 
+		// set deadline loan
 		const deadlineLoan = schedule.scheduleJob(`deadline-${loan._id}`, endOfLoan, async () => {
 
 			// update loan data
@@ -51,6 +52,7 @@ const setLoan = asyncHandler(async (req, res) => {
 
 			console.log(`${user.name} got punished!`)
 			
+			// set punishment
 			const punishment = schedule.scheduleJob(`punishment-${loan._id}`, punishmentEnded, async () => {
 				user.penalty = false
 				await user.save()
@@ -206,17 +208,21 @@ const getMyLoans = asyncHandler(async (req, res) => {
 // @access PRIVATE
 const completeTheLoan = asyncHandler(async (req, res) => {
 	try {
+		// get loan, user and book data
 		let loan = await Loan.findById(req.params?.id)
 		let user = await User.findById(req?.user?._id)
 		let book = await Book.findById(loan?.book)
 		
+		// get scheduled deadline
 		const deadlineLoan = schedule.scheduledJobs[`deadline-${loan._id}`]
 		
+		// fail to load data
 		if (!loan || !user || !book) {
 			res.status(424)
 			throw new Error('Failed to load this loan data.')
 		}
 
+		// cancell the scheduled deadline
 		deadlineLoan && deadlineLoan.cancel() && console.log('deadline function is cancelled.')
 		
 		// update loan data
@@ -235,15 +241,21 @@ const completeTheLoan = asyncHandler(async (req, res) => {
 		book.user = null
 		await book.save()
 
+		// regenerating loan data for the responses
 		loan = await Loan.findById(loan._id)
-			.select({ _id: 1, isCompleted: 1, message: 1, completedAt: 1 })
-			.lean()
+		.select({ _id: 1, isCompleted: 1, message: 1, completedAt: 1 })
+		.lean()
+
+		// regenerating user data for the responses
 		user = await User.findById(user?._id)
-			.populate('books', 'title code')
-			.select({ _id: 1, name: 1, code: 1, books: 1 })
-			.lean()
+		.populate('books', 'title code')
+		.select({ _id: 1, name: 1, code: 1, books: 1 })
+		.lean()
+		
+				// regenerating book data for the responses
 		book = await Book.findById(book?._id).select({ _id: 1, code: 1, title: 1, stock: 1 }).lean()
 
+		// status code & json response 
 		res.status(200).json({
 			loan,
 			book,

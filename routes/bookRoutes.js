@@ -5,6 +5,6 @@ const { semiProtected, protect } = require('../middleware/authMiddleware')
 const { setBook, getBooks, getBookByParams } = require('../controllers/bookController')
 
 router.route('/').get(semiProtected, getBooks).post(protect, setBook) // Set Book | Get Books
-router.route('/:params').get(semiProtected, getBookByParams) // Get Detail Book
+router.route('/:params').get(semiProtected, getBookByParams) // Get Detail Book by Params
 
 module.exports = router
