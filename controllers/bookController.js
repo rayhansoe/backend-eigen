@@ -49,7 +49,7 @@ const setBook = asyncHandler(async (req, res) => {
 	// check if create user fail.
 	if (!book) {
 		res.status(400)
-		throw new Error('Invalid user data.')
+		throw new Error('Invalid book data.')
 	}
 
 	// set status code & response json
@@ -75,8 +75,8 @@ const getBooks = asyncHandler(async (req, res) => {
 		: // show borrowed books / unavailable books
 		  Book.find({ stock: 0 })
 	)
-		.populate('user', 'code')
-		.populate('loans', 'endOfLoan completedAt')
+		.populate('user', req.user ? 'code name' : 'code')
+		.populate('loans', req.user ? 'endOfLoan completedAt' : '_id')
 		.select({
 			_id: 1,
 			code: 1,
@@ -98,7 +98,7 @@ const getBooks = asyncHandler(async (req, res) => {
 
 // @desc Read Book by params
 // @route GET /api/books/:params
-// @access PUBLIC
+// @access SEMI PUBLIC
 const getBookByParams = asyncHandler(async (req, res) => {
 	const { params } = req.params
 
@@ -109,8 +109,8 @@ const getBookByParams = asyncHandler(async (req, res) => {
 		: // then findOne or by slug
 		  Book.findOne({ slug: params })
 	)
-		.populate({ path: 'user', select: ['name', 'code'] })
-		.populate('loans', 'endOfLoan completedAt')
+		.populate('user', req.user ? 'name code' : 'code')
+		.populate('loans', req.user ? 'endOfLoan completedAt isCompleted isForced message' : 'endOfLoan completedAt')
 		.select({
 			_id: 1,
 			code: 1,
