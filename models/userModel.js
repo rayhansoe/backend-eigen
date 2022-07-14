@@ -42,6 +42,12 @@ const userSchema = new Schema(
 			unique: true,
 		},
 
+		loans: {
+			type: [Schema.Types.ObjectId],
+			ref: 'Loan',
+			unique: true,
+		},
+
 		refreshTokens: {
 			type: Array,
 			unique: true,
