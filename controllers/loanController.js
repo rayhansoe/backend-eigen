@@ -8,14 +8,16 @@ const User = require('../models/userModel')
 // @route POST /api/loans
 // @access PRIVATE
 const setLoan = asyncHandler(async (req, res) => {
+	// Get user & book
 	const user = await User.findById(req?.user?._id)
 	const book = await Book.findById(req?.query?.bookId)
 
-	const date = new Date()
-	const endOfLoan = date.setDate(date.getDate() + 7)
-	const message = [`${user.code} borrowed the ${book.code} book.`]
+	const date = new Date() // get date
+	const endOfLoan = date.setDate(date.getDate() + 7) // generate book return deadline
+	const message = [`${user.code} borrowed the ${book.code} book.`] // message for the first data creation action.
 
 	try {
+		// set loan
 		const loan = await Loan.create({
 			user: user._id,
 			book: book._id,
@@ -25,27 +27,29 @@ const setLoan = asyncHandler(async (req, res) => {
 			message,
 		})
 
-		user?.books?.push(book._id)
+		// update user data
+		user?.books?.push(book._id) // push book to user collection
+		user.loans.push(loan._id) // push loan to user collection
 		await user.save()
 
-		book.stock = 0
+		// update book data
+		book.stock = 0 // decrease book stock
+		book.loans.push(loan?._id) // push loan to book collection
+		book.user = user?._id // push user to book collection
 		await book.save()
 
-		book.loanId = loan?._id
-		await book.save()
-
-		book.user = user?._id
-		await book.save()
-
+		// populate loan data for client side
 		const responseLoan = await Loan.findById(loan._id)
 			.populate('user', 'name')
 			.populate('book', 'title')
 			.lean()
 
+		// status code and response
 		res.status(201).json({
 			loan: responseLoan,
 		})
 	} catch (error) {
+		// if failed to set loan or borrow this book.
 		res.status(424)
 		throw new Error('Failed to borrow this book.')
 	}
