@@ -1,4 +1,3 @@
-const jwt = require('jsonwebtoken')
 const asyncHandler = require('express-async-handler')
 
 const Book = require('../models/bookModel')
@@ -9,6 +8,11 @@ const protectBook = asyncHandler(async (req, res, next) => {
 
 	try {
 		const book = await Book.findById(bookId)
+
+		if (!book) {
+			res.status(404)
+			throw new Error('Book is not found')
+		}
 
 		if (book?.stock !== 1) {
 			isBorrowed = true
