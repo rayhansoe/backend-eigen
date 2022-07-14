@@ -231,6 +231,7 @@ const getUserProfile = asyncHandler(async (req, res) => {
 				_id: 1,
 				username: 1,
 				name: 1,
+				loans: 1,
 			})
 			.lean()
 
@@ -240,13 +241,15 @@ const getUserProfile = asyncHandler(async (req, res) => {
 	}
 
 	user = await User.findById(userExist._id)
-		.populate({ path: 'books', select: ['code', 'title'] })
+		.populate('books', 'code title')
+		.populate('loans', 'isComplete endOfLoan')
 		.select({
 			_id: 1,
 			username: 1,
 			name: 1,
 			email: 1,
 			books: 1,
+			loans: 1,
 		})
 		.lean()
 
