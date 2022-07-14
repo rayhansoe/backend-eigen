@@ -1,12 +1,14 @@
-const express = require('express')
 const cors = require('cors')
-const dotenv = require('dotenv').config()
+const express = require('express')
 const colors = require('colors')
-const connectDB = require('./config/db')
-const { errorHandler } = require('./middleware/errorMiddleware')
-const corsOption = require('./config/corsOption')
+const dotenv = require('dotenv').config()
 const cookieParser = require('cookie-parser')
+
+const connectDB = require('./config/db')
+const corsOption = require('./config/corsOption')
 const credentials = require('./middleware/credentials')
+const { errorHandler } = require('./middleware/errorMiddleware')
+
 const port = process.env.PORT || 5000
 
 connectDB()
