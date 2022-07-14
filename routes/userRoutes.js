@@ -12,7 +12,7 @@ const {
 
 const { semiProtected, protect } = require('../middleware/authMiddleware')
 
-router.route('/').post(registerUser).get(getUsers)
+router.route('/').post(registerUser).get(semiProtected, getUsers)
 router.route('/login').post(loginUser)
 router.route('/logout').delete(protect, logout)
 router.route('/refreshToken').get(handleRefreshToken)
