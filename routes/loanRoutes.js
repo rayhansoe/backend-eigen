@@ -1,7 +1,7 @@
 const express = require('express')
 const router = express.Router()
 
-const { setLoan, getLoans } = require('../controllers/loanController')
+const { setLoan, getLoans, getLoanById } = require('../controllers/loanController')
 const { protect, semiProtected } = require('../middleware/authMiddleware')
 const { protectBook } = require('../middleware/bookMiddleware')
 const { protectUser } = require('../middleware/userMiddleware')
@@ -14,5 +14,6 @@ const { protectUser } = require('../middleware/userMiddleware')
 
 // GET & SET Loan
 router.route('/').get(semiProtected, getLoans).post(protect, protectUser, protectBook, setLoan)
+router.route('/:id').get(semiProtected, getLoanById)
 
 module.exports = router

@@ -51,9 +51,9 @@ const setLoan = asyncHandler(async (req, res) => {
 	}
 })
 
-// @desc Read Books
-// @route Get /api/books/
-// @access PUBLIC
+// @desc Read Loans
+// @route Get /api/loans/
+// @access SEMI PUBLIC
 const getLoans = asyncHandler(async (req, res) => {
 	// get queries
 	let { isActive, isCompleted, isForced } = req.query
@@ -96,7 +96,29 @@ const getLoans = asyncHandler(async (req, res) => {
 	})
 })
 
+// @desc Read Loan by Id
+// @route GET /api/loans/:id
+// @access SEMI PUBLIC
+const getLoanById = asyncHandler(async (req, res) => {
+	const loanId = req.params?.id
+
+	try {
+		const loan = await Loan.findById(loanId)
+			.populate('user', req.user ? 'name' : 'code')
+			.populate('book', req.user ? 'title' : 'code')
+			.lean()
+
+		res.status(200).json({
+			loan,
+		})
+	} catch (error) {
+		res.status(424)
+		throw new Error('Failed to load this loan data.')
+	}
+})
+
 module.exports = {
 	setLoan,
 	getLoans,
+	getLoanById,
 }
