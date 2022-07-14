@@ -1,9 +1,16 @@
 const express = require('express')
 const router = express.Router()
 
-const { setLoan, getLoans, getLoanById } = require('../controllers/loanController')
+const {
+	setLoan,
+	getLoans,
+	getLoanById,
+	getMyLoans,
+	completeTheLoan,
+} = require('../controllers/loanController')
 const { protect, semiProtected } = require('../middleware/authMiddleware')
 const { protectBook } = require('../middleware/bookMiddleware')
+const { protectLoan } = require('../middleware/loanMiddleware')
 const { protectUser } = require('../middleware/userMiddleware')
 // create loan
 // read all loans
@@ -14,6 +21,7 @@ const { protectUser } = require('../middleware/userMiddleware')
 
 // GET & SET Loan
 router.route('/').get(semiProtected, getLoans).post(protect, protectUser, protectBook, setLoan)
-router.route('/:id').get(semiProtected, getLoanById)
+router.route('/myloans/').get(protect, getMyLoans)
+router.route('/:id').get(semiProtected, getLoanById).put(protect, protectLoan, completeTheLoan)
 
 module.exports = router
